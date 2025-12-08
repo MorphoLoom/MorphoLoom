@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 17 데이터베이스
+  postgres:
+    image: postgres:17
+    container_name: morpholoom-postgres
+    environment:
+      POSTGRES_DB: morpholoom
+      POSTGRES_USER: morpholoom
+      POSTGRES_PASSWORD: morpholoom123!
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "15432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U morpholoom"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - morpholoom-network
+
+  # MorphoLoom Java 17 애플리케이션
+  morpholoom:
+    build:
+      context: ./Morpholoom
+      dockerfile: Dockerfile
+    container_name: morpholoom-app
+    working_dir: /app
+    volumes:
+      - morpholoom_storage:/app/storage
+    ports:
+      - "18080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/morpholoom
+      SPRING_DATASOURCE_USERNAME: morpholoom
+      SPRING_DATASOURCE_PASSWORD: morpholoom123!
+    # command: >
+    #   sh -c "
+    #     chmod +x ./mvnw && 
+    #     ./mvnw clean install -DskipTests && 
+    #     java -jar target/morpholoom-0.0.1-SNAPSHOT.jar
+    #   "
+    networks:
+      - morpholoom-network
+
+  # LivePortrait Python 애플리케이션
+  liveportrait:
+    build:
+      context: ./LivePortrait
+      # dockerfile: Dockerfile
+      # GPU가 없는 경우 아래 주석 해제하고 위의 dockerfile을 Dockerfile.cpu로 변경
+      dockerfile: Dockerfile.cpu
+    container_name: liveportrait-app
+    volumes:
+      - ./LivePortrait:/app
+      - liveportrait_weights:/app/pretrained_weights
+      - liveportrait_output:/app/animations
+    ports:
+      - "17860:7860"
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+    # GPU 지원 (NVIDIA GPU가 있는 경우)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    networks:
+      - morpholoom-network
+    # GPU가 없는 경우 위의 deploy 섹션을 주석 처리하세요
+
+volumes:
+  postgres_data:
+  morpholoom_storage:
+  liveportrait_weights:
+  liveportrait_output:
+
+networks:
+  morpholoom-network:
+    driver: bridge
+

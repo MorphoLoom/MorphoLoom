@@ -1,0 +1,51 @@
+spring:
+  application:
+    name: Morpholoom
+  datasource:
+    driverClassName: org.postgresql.Driver
+    # url: jdbc:postgresql://morpholoom-postgres:5432/morpholoom
+    url: jdbc:postgresql://localhost:15432/morpholoom
+    username: morpholoom
+    password: morpholoom123!    
+  thymeleaf:
+    prefix: classpath:/static/
+    cache: false
+  security:
+    enabled: false
+
+# Local file storage
+storage:
+  local:
+    root-dir: ./storage            # 서버 내 저장 경로
+    public-base-url: /files        # 정적 제공 URL prefix
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    session.timeout: 60m
+
+## Logging
+logging.config: classpath:logback-spring-local.xml
+logging.base.dir: logs
+
+# HTTP retrieve
+datacore:
+  http:
+    binding:
+      response:
+        log.yn: Y
+      cause:
+        msg:
+          trace:
+            key: x-detail-error-key
+            value: BBBBB
+          level: 3
+
+http.pool:
+  max.total: 200
+  defaultMaxPerRoute: 100
+  connection.timeout: 5000
+  connection.request.timeout: 5000
+  read.timeout: 10000
+  validate.after.inactivity: 2000

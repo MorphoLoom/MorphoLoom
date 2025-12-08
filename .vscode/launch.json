@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MorpholoomApplication<Morpholoom>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.project.Morpholoom.MorpholoomApplication",
+            "projectName": "Morpholoom",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MorpholoomApplication<morpholoom>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.morpholoom.morpholoom.MorpholoomApplication",
+            "projectName": "morpholoom",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
