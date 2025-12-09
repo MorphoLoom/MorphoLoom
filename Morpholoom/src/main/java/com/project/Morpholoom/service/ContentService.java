@@ -23,6 +23,7 @@ import com.project.Morpholoom.dto.content.VideoSaveRequest;
 import com.project.Morpholoom.mapper.ImageMapper;
 import com.project.Morpholoom.mapper.VideoMapper;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -33,15 +34,29 @@ public class ContentService {
     private final VideoMapper videoMapper;
 
     @Value("${storage.local.root-dir:./storage}")
-    private String rootDir;
+    private String rootDirConfig;
+    
+    private Path rootDir;
 
     @Value("${storage.local.public-base-url:/files}")
     private String publicBaseUrl;
 
+    @PostConstruct
+    public void init() {
+        // 상대 경로를 절대 경로로 변환
+        Path configPath = Paths.get(rootDirConfig);
+        if (configPath.isAbsolute()) {
+            rootDir = configPath;
+        } else {
+            // 상대 경로인 경우 애플리케이션 실행 디렉토리 기준으로 절대 경로 생성
+            rootDir = Paths.get(System.getProperty("user.dir")).resolve(configPath).normalize();
+        }
+    }
+
     public UploadUrlResponse issueImageUploadUrl(Long userId, UploadUrlRequest request) {
         String filename = UUID.randomUUID() + "-" + sanitize(request.getFileName());
         String fileUrl = publicBaseUrl + "/user/" + userId + "/images/" + filename;
-        String uploadPath = Paths.get(rootDir, "user", String.valueOf(userId), "images", filename).toString();
+        String uploadPath = rootDir.resolve("user").resolve(String.valueOf(userId)).resolve("images").resolve(filename).toString();
         return new UploadUrlResponse(uploadPath, fileUrl);
     }
 
@@ -70,7 +85,7 @@ public class ContentService {
     public UploadUrlResponse issueVideoUploadUrl(Long userId, UploadUrlRequest request) {
         String filename = UUID.randomUUID() + "-" + sanitize(request.getFileName());
         String fileUrl = publicBaseUrl + "/user/" + userId + "/videos/" + filename;
-        String uploadPath = Paths.get(rootDir, "user", String.valueOf(userId), "videos", filename).toString();
+        String uploadPath = rootDir.resolve("user").resolve(String.valueOf(userId)).resolve("videos").resolve(filename).toString();
         return new UploadUrlResponse(uploadPath, fileUrl);
     }
 
@@ -99,7 +114,7 @@ public class ContentService {
     private StoredFile storeFile(Long userId, String category, MultipartFile file) throws IOException {
         String originalName = sanitize(file.getOriginalFilename());
         String filename = UUID.randomUUID() + "-" + (StringUtils.hasText(originalName) ? originalName : category);
-        Path targetDir = Paths.get(rootDir, "user", String.valueOf(userId), category);
+        Path targetDir = rootDir.resolve("user").resolve(String.valueOf(userId)).resolve(category);
         Files.createDirectories(targetDir);
         Path targetFile = targetDir.resolve(filename);
         file.transferTo(targetFile.toFile());

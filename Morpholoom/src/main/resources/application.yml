@@ -13,6 +13,11 @@ spring:
   security:
     enabled: false
 
+# MyBatis 설정
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.project.Morpholoom.domain
+
 # Local file storage
 storage:
   local:

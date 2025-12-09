@@ -37,12 +37,16 @@ RUN pip3 install --no-cache-dir "huggingface_hub[cli]"
 # 전체 프로젝트 복사
 COPY . .
 
-# pretrained weights 다운로드 (선택사항 - 주석 해제하여 사용)
-# RUN huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --exclude "*.git*" "README.md" "docs" || true
+# Entrypoint 스크립트 복사 및 실행 권한 부여
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # 포트 노출
 EXPOSE 7860
 
-# 기본 명령어 (Gradio 앱 실행)
-CMD ["python", "app.py", "--server_name", "0.0.0.0", "--server_port", "7860"]
+# Entrypoint 설정 (pretrained weights 자동 다운로드)
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+# 기본 명령어 (Gradio 앱 실행, CPU 모드 강제)
+CMD ["python", "app.py", "--server_name", "0.0.0.0", "--server_port", "7860", "--flag_force_cpu"]
 
