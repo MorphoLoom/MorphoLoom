@@ -3,8 +3,8 @@ spring:
     name: Morpholoom
   datasource:
     driverClassName: org.postgresql.Driver
-    # url: jdbc:postgresql://morpholoom-postgres:5432/morpholoom
-    url: jdbc:postgresql://localhost:15432/morpholoom
+    url: jdbc:postgresql://morpholoom-postgres:5432/morpholoom
+    # url: jdbc:postgresql://localhost:15432/morpholoom
     username: morpholoom
     password: morpholoom123!    
   thymeleaf:
@@ -12,6 +12,10 @@ spring:
     cache: false
   security:
     enabled: false
+  servlet:
+    multipart:
+      max-file-size: 100MB      # 단일 파일 최대 크기
+      max-request-size: 100MB   # 전체 요청 최대 크기
 
 # MyBatis 설정
 mybatis:
@@ -25,7 +29,7 @@ storage:
     public-base-url: /files        # 정적 제공 URL prefix
 
 server:
-  port: 8080
+  port: 8888
   servlet:
     context-path: /
     session.timeout: 60m

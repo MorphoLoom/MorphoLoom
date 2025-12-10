@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y \
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1 && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
 
+    RUN cd /usr/local/cuda/lib64 && \
+    ln -sf libnvrtc.so.11.8.89 libnvrtc.so && \
+    ln -sf libnvrtc.so.11.8.89 libnvrtc.so.11    
 # 작업 디렉토리 설정
 WORKDIR /app
 
@@ -39,11 +42,12 @@ RUN pip3 install --no-cache-dir "huggingface_hub[cli]"
 COPY . .
 
 # pretrained weights 다운로드 (선택사항 - 주석 해제하여 사용)
-# RUN huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --exclude "*.git*" "README.md" "docs" || true
+RUN huggingface-cli download KwaiVGI/LivePortrait --local-dir pretrained_weights --exclude "*.git*" "README.md" "docs" || true
 
 # 포트 노출
 EXPOSE 7860
 
 # 기본 명령어 (Gradio 앱 실행)
-CMD ["python", "app.py", "--server_name", "0.0.0.0", "--server_port", "7860"]
+# CMD ["python", "app.py", "--server_name", "0.0.0.0", "--server_port", "7860"]
+CMD ["bash"]
 
