@@ -60,7 +60,6 @@ services:
     volumes:
       - ./LivePortrait:/app
       - ./LivePortrait/pretrained_weights:/app/pretrained_weights
-      - liveportrait_output:/app/animations
       - ./storage/user/images:/app/assets/examples/source
       - ./storage/user/videos:/app/assets/examples/driving
       - ./storage/user/results:/app/animations

@@ -20,19 +20,19 @@ public class InferenceResponse {
     @Schema(description = "실행된 명령어", example = "python inference.py -s /app/storage/user/1/images/test.png -d /app/storage/user/1/videos/test.mp4")
     private String executedCommand;
 
-    @Schema(description = "명령어 실행 결과 출력")
-    private String output;
+    @Schema(description = "결과 동영상 파일 경로", example = "/app/src/storage/user/results/1/test--test.mp4")
+    private String resultVideoPath;
 
     @Schema(description = "오류 메시지 (실패 시)")
     private String error;
 
     // 성공 응답 생성 메소드
-    public static InferenceResponse success(String message, String command, String output) {
+    public static InferenceResponse success(String message, String command, String resultVideoPath) {
         InferenceResponse response = new InferenceResponse();
         response.setSuccess(true);
         response.setMessage(message);
         response.setExecutedCommand(command);
-        response.setOutput(output);
+        response.setResultVideoPath(resultVideoPath);
         return response;
     }
 

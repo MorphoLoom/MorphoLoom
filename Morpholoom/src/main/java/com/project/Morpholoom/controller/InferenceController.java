@@ -9,8 +9,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/v1/inference")
@@ -23,13 +30,13 @@ public class InferenceController {
 
     @PostMapping("/execute")
     @Operation(summary = "AI 추론 실행", description = "Docker 컨테이너에서 Python 추론 스크립트를 실행합니다. " +
-            "소스 이미지와 드라이빙 비디오를 입력으로 받아 LivePortrait 추론을 수행합니다.")
+            "소스 이미지와 드라이빙 비디오를 입력으로 받아 LivePortrait 추론을 수행하고 결과 동영상을 반환합니다.")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "추론 실행 성공"),
+            @ApiResponse(responseCode = "200", description = "추론 실행 성공 - 동영상 파일 반환"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 파라미터"),
             @ApiResponse(responseCode = "500", description = "서버 오류 또는 컨테이너 실행 실패")
     })
-    public ResponseEntity<InferenceResponse> executeInference(@RequestBody InferenceRequest request) {
+    public ResponseEntity<?> executeInference(@RequestBody InferenceRequest request) {
         log.info("추론 실행 요청: sourcePath={}, drivingPath={}, userId={}",
                 request.getSourcePath(), request.getDrivingPath(), request.getUserId());
 
@@ -46,20 +53,39 @@ public class InferenceController {
 
         // 컨테이너 상태 확인
         if (!dockerExecutionService.isContainerRunning()) {
-            log.error("recursing_keldysh 컨테이너가 실행 중이 아닙니다.");
+            log.error("liveportrait-app 컨테이너가 실행 중이 아닙니다.");
             return ResponseEntity.status(503).body(
                     InferenceResponse.failure(
                             "추론 서비스를 사용할 수 없습니다.",
                             "",
-                            "recursing_keldysh 컨테이너가 실행 중이 아닙니다."));
+                            "liveportrait-app 컨테이너가 실행 중이 아닙니다."));
         }
 
         try {
             InferenceResponse response = dockerExecutionService.executeInference(request);
 
             if (response.isSuccess()) {
-                log.info("추론 실행 성공: userId={}", request.getUserId());
-                return ResponseEntity.ok(response);
+                log.info("추론 실행 성공: userId={}, resultPath={}", request.getUserId(), response.getResultVideoPath());
+                
+                // 결과 동영상 파일 반환
+                Path videoPath = Paths.get(response.getResultVideoPath());
+                Resource videoResource = new UrlResource(videoPath.toUri());
+                
+                if (!videoResource.exists() || !videoResource.isReadable()) {
+                    log.error("결과 동영상 파일을 찾을 수 없습니다: {}", response.getResultVideoPath());
+                    return ResponseEntity.status(500).body(
+                            InferenceResponse.failure(
+                                    "결과 동영상 파일을 찾을 수 없습니다.",
+                                    response.getExecutedCommand(),
+                                    "파일 경로: " + response.getResultVideoPath()));
+                }
+                
+                String filename = videoPath.getFileName().toString();
+                
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType("video/mp4"))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                        .body(videoResource);
             } else {
                 log.error("추론 실행 실패: userId={}, error={}", request.getUserId(), response.getError());
                 return ResponseEntity.status(500).body(response);
@@ -88,13 +114,13 @@ public class InferenceController {
             return ResponseEntity.ok(
                     InferenceResponse.success(
                             "추론 서비스가 정상적으로 실행 중입니다.",
-                            "docker ps --filter name=recursing_keldysh",
-                            "컨테이너 실행 중"));
+                            "docker ps --filter name=liveportrait-app",
+                            ""));
         } else {
             return ResponseEntity.status(503).body(
                     InferenceResponse.failure(
                             "추론 서비스를 사용할 수 없습니다.",
-                            "docker ps --filter name=recursing_keldysh",
+                            "docker ps --filter name=liveportrait-app",
                             "컨테이너가 실행 중이 아닙니다."));
         }
     }
