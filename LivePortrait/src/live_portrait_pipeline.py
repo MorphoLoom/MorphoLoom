@@ -449,7 +449,11 @@ class LivePortraitPipeline(object):
                     I_p_pstbk = paste_back(I_p_i, crop_info['M_c2o'], source_rgb_lst[0], mask_ori_float)
                 I_p_pstbk_lst.append(I_p_pstbk)
 
-        mkdir(args.output_dir)
+        # Create output directory with optional id subfolder
+        output_dir = args.output_dir
+        if args.id is not None:
+            output_dir = osp.join(args.output_dir, str(args.id))
+        mkdir(output_dir)
         wfp_concat = None
         ######### build the final concatenation result #########
         # driving frame | source frame | generation
@@ -467,7 +471,7 @@ class LivePortraitPipeline(object):
             flag_source_has_audio = flag_is_source_video and has_audio_stream(args.source)
             flag_driving_has_audio = (not flag_load_from_template) and has_audio_stream(args.driving)
 
-            wfp_concat = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.mp4')
+            wfp_concat = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.mp4')
 
             # NOTE: update output fps
             output_fps = source_fps if flag_is_source_video else output_fps
@@ -475,7 +479,7 @@ class LivePortraitPipeline(object):
 
             if flag_source_has_audio or flag_driving_has_audio:
                 # final result with concatenation
-                wfp_concat_with_audio = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat_with_audio.mp4')
+                wfp_concat_with_audio = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat_with_audio.mp4')
                 audio_from_which_video = args.driving if ((flag_driving_has_audio and args.audio_priority == 'driving') or (not flag_source_has_audio)) else args.source
                 log(f"Audio is selected from {audio_from_which_video}, concat mode")
                 add_audio_to_video(wfp_concat, audio_from_which_video, wfp_concat_with_audio)
@@ -483,7 +487,7 @@ class LivePortraitPipeline(object):
                 log(f"Replace {wfp_concat_with_audio} with {wfp_concat}")
 
             # save the animated result
-            wfp = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}.mp4')
+            wfp = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}.mp4')
             if I_p_pstbk_lst is not None and len(I_p_pstbk_lst) > 0:
                 images2video(I_p_pstbk_lst, wfp=wfp, fps=output_fps)
             else:
@@ -491,7 +495,7 @@ class LivePortraitPipeline(object):
 
             ######### build the final result #########
             if flag_source_has_audio or flag_driving_has_audio:
-                wfp_with_audio = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_with_audio.mp4')
+                wfp_with_audio = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}_with_audio.mp4')
                 audio_from_which_video = args.driving if ((flag_driving_has_audio and args.audio_priority == 'driving') or (not flag_source_has_audio)) else args.source
                 log(f"Audio is selected from {audio_from_which_video}")
                 add_audio_to_video(wfp, audio_from_which_video, wfp_with_audio)
@@ -504,9 +508,9 @@ class LivePortraitPipeline(object):
             log(f'Animated video: {wfp}')
             log(f'Animated video with concat: {wfp_concat}')
         else:
-            wfp_concat = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.jpg')
+            wfp_concat = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.jpg')
             cv2.imwrite(wfp_concat, frames_concatenated[0][..., ::-1])
-            wfp = osp.join(args.output_dir, f'{basename(args.source)}--{basename(args.driving)}.jpg')
+            wfp = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}.jpg')
             if I_p_pstbk_lst is not None and len(I_p_pstbk_lst) > 0:
                 cv2.imwrite(wfp, I_p_pstbk_lst[0][..., ::-1])
             else:

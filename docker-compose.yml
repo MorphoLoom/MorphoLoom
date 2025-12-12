@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: morpholoom
       POSTGRES_USER: morpholoom
-      POSTGRES_PASSWORD: morpholoom123!
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       - "15432:5432"
@@ -39,7 +39,9 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/morpholoom
       SPRING_DATASOURCE_USERNAME: morpholoom
-      SPRING_DATASOURCE_PASSWORD: morpholoom123!
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
     command: ["bash"]
     tty: true      
     # command: >
@@ -86,10 +88,10 @@ services:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: morpholoom
-      KC_DB_PASSWORD: morpholoom123!
+      KC_DB_PASSWORD: ${DB_PASSWORD}
       # 관리자 계정
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123!
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
       # 호스트 설정
       # KC_HOSTNAME: http://10.10.110.29
       # KC_HOSTNAME_PORT: 18081
