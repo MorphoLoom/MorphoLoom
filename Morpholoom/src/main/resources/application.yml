@@ -11,12 +11,36 @@ spring:
     prefix: classpath:/static/
     cache: false
   security:
-    enabled: false
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://10.10.110.29:18081/realms/Morpholoom-realms
   servlet:
     multipart:
       max-file-size: 100MB      # 단일 파일 최대 크기
       max-request-size: 100MB   # 전체 요청 최대 크기
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: kdk7854@gmail.com
+    password: ugam sthk rznr xclh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+keycloak:
+  realm: Morpholoom-realms
+  auth-server-url: http://10.10.110.29:18081
+  resource: spring-boot-client
+  credentials:
+    secret: 793F49z4gKrbomaG2xW0SpUECWqNMxXs
+  # principal-attribute: preferred_username
 # MyBatis 설정
 mybatis:
   mapper-locations: classpath:mapper/*.xml
@@ -29,7 +53,7 @@ storage:
     public-base-url: /files        # 정적 제공 URL prefix
 
 server:
-  port: 8888
+  port: 8080
   servlet:
     context-path: /
     session.timeout: 60m

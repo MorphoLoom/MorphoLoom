@@ -12,5 +12,11 @@ public interface UserMapper {
     User findByEmail(@Param("email") String email);
 
     User findById(@Param("id") Long id);
+    
+    void deleteById(@Param("id") Long id);
+    
+    void deleteByEmail(@Param("email") String email);
+    
+    void updatePassword(@Param("email") String email, @Param("passwordHash") String passwordHash);
 }
 

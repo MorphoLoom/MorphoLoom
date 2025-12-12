@@ -26,5 +26,17 @@
         SELECT * FROM users WHERE id = #{id}
     </select>
 
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM users WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByEmail" parameterType="string">
+        DELETE FROM users WHERE email = #{email}
+    </delete>
+
+    <update id="updatePassword">
+        UPDATE users SET password_hash = #{passwordHash} WHERE email = #{email}
+    </update>
+
 </mapper>
 

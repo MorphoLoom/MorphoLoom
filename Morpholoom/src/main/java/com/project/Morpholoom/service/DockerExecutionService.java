@@ -40,9 +40,10 @@ public class DockerExecutionService {
         String drivingPath = String.format("/app/assets/examples/driving/%d/%s", userId, extractFileName(request.getDrivingPath()));
 
         // 결과 동영상 파일 경로 생성: {sourceName}--{drivingName}.mp4
-        String resultVideoPath = String.format("/app/src/storage/user/results/%d/%s--%s.mp4", 
-                userId, sourceFileName, drivingFileName);
-
+        // String resultVideoPath = String.format("/app/src/storage/user/results/%d/%s--%s.mp4", 
+        //         userId, sourceFileName, drivingFileName);
+        String resultVideoPath = String.format("/app/src/storage/user/results/%s--%s.mp4", 
+                 sourceFileName, drivingFileName);
         String[] command = {
                 "python", "/app/inference.py",
                 "-s", sourcePath,

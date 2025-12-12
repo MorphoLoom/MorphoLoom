@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +20,7 @@ import com.project.Morpholoom.dto.creation.CreationRequest;
 import com.project.Morpholoom.dto.creation.CreationResponse;
 import com.project.Morpholoom.dto.creation.LikeResponse;
 import com.project.Morpholoom.service.CreationService;
+import com.project.Morpholoom.service.SecurityService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,12 +31,13 @@ import lombok.RequiredArgsConstructor;
 public class CreationController {
 
     private final CreationService creationService;
+    private final SecurityService securityService;
 
     @PostMapping
     @Operation(summary = "창작물 등록", description = "이미지/비디오 정보를 포함한 창작물을 등록합니다.")
     public ResponseEntity<CreationResponse> create(
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @RequestBody CreationRequest request) {
+        Long userId = securityService.getCurrentUserId();
         return ResponseEntity.ok(creationService.create(userId, request));
     }
 
@@ -52,16 +53,16 @@ public class CreationController {
     @PostMapping("/{creationId}/like")
     @Operation(summary = "좋아요 추가", description = "지정한 창작물에 좋아요를 추가합니다.")
     public ResponseEntity<LikeResponse> like(
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long creationId) {
+        Long userId = securityService.getCurrentUserId();
         return ResponseEntity.ok(creationService.like(userId, creationId));
     }
 
     @DeleteMapping("/{creationId}/like")
     @Operation(summary = "좋아요 취소", description = "지정한 창작물의 좋아요를 취소합니다.")
     public ResponseEntity<LikeResponse> unlike(
-            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @PathVariable Long creationId) {
+        Long userId = securityService.getCurrentUserId();
         return ResponseEntity.ok(creationService.unlike(userId, creationId));
     }
 
