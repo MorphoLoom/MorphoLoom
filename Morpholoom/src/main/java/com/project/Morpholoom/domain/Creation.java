@@ -10,7 +10,8 @@ public class Creation {
     private Long id;
     private Long userId;
     private String title;
-    private String imageUrl;
+    private String description;
+    private String filename;
     private Integer likes;
     private Double rankScore;
     private LocalDateTime createdAt;

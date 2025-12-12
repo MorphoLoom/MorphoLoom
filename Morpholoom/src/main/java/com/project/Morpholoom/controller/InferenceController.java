@@ -1,23 +1,30 @@
 package com.project.Morpholoom.controller;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.project.Morpholoom.dto.inference.InferenceRequest;
 import com.project.Morpholoom.dto.inference.InferenceResponse;
 import com.project.Morpholoom.service.DockerExecutionService;
+import com.project.Morpholoom.service.SecurityService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/v1/inference")
@@ -27,6 +34,7 @@ import java.nio.file.Paths;
 public class InferenceController {
 
     private final DockerExecutionService dockerExecutionService;
+    private final SecurityService securityService;
 
     @PostMapping("/execute")
     @Operation(summary = "AI 추론 실행", description = "Docker 컨테이너에서 Python 추론 스크립트를 실행합니다. " +
@@ -37,8 +45,9 @@ public class InferenceController {
             @ApiResponse(responseCode = "500", description = "서버 오류 또는 컨테이너 실행 실패")
     })
     public ResponseEntity<?> executeInference(@RequestBody InferenceRequest request) {
+        Long userId = securityService.getCurrentUserId();
         log.info("추론 실행 요청: sourcePath={}, drivingPath={}, userId={}",
-                request.getSourcePath(), request.getDrivingPath(), request.getUserId());
+                request.getSourcePath(), request.getDrivingPath(), userId);
 
         // 입력 유효성 검사
         if (request.getSourcePath() == null || request.getSourcePath().trim().isEmpty()) {
@@ -62,10 +71,10 @@ public class InferenceController {
         }
 
         try {
-            InferenceResponse response = dockerExecutionService.executeInference(request);
+            InferenceResponse response = dockerExecutionService.executeInference(request, userId);
 
             if (response.isSuccess()) {
-                log.info("추론 실행 성공: userId={}, resultPath={}", request.getUserId(), response.getResultVideoPath());
+                log.info("추론 실행 성공: userId={}, resultPath={}", userId, response.getResultVideoPath());
                 
                 // 결과 동영상 파일 반환
                 Path videoPath = Paths.get(response.getResultVideoPath());
@@ -87,7 +96,7 @@ public class InferenceController {
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
                         .body(videoResource);
             } else {
-                log.error("추론 실행 실패: userId={}, error={}", request.getUserId(), response.getError());
+                log.error("추론 실행 실패: userId={}, error={}", userId, response.getError());
                 return ResponseEntity.status(500).body(response);
             }
 

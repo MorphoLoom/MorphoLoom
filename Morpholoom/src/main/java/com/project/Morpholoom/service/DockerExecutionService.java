@@ -29,10 +29,10 @@ public class DockerExecutionService {
      * Docker 컨테이너에서 Python 추론 명령을 실행합니다.
      *
      * @param request 추론 요청 정보
+     * @param userId 사용자 ID
      * @return 추론 실행 결과
      */
-    public InferenceResponse executeInference(InferenceRequest request) {
-        Long userId = request.getUserId();
+    public InferenceResponse executeInference(InferenceRequest request, Long userId) {
         String sourceFileName = extractFileNameWithoutExtension(request.getSourcePath());
         String drivingFileName = extractFileNameWithoutExtension(request.getDrivingPath());
         

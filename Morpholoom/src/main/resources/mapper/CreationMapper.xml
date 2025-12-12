@@ -8,19 +8,34 @@
         <id property="id" column="id"/>
         <result property="userId" column="user_id"/>
         <result property="title" column="title"/>
-        <result property="imageUrl" column="image_url"/>
+        <result property="description" column="description"/>
+        <result property="filename" column="filename"/>
         <result property="likes" column="likes"/>
         <result property="rankScore" column="rank_score"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
     <insert id="insertCreation" parameterType="com.project.Morpholoom.domain.Creation" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO creations (user_id, title, image_url, likes, rank_score, created_at)
-        VALUES (#{userId}, #{title}, #{imageUrl}, #{likes}, #{rankScore}, #{createdAt})
+        INSERT INTO creations (user_id, title, description, filename, likes, rank_score, created_at)
+        VALUES (#{userId}, #{title}, #{description}, #{filename}, #{likes}, #{rankScore}, #{createdAt})
     </insert>
 
     <select id="listCreations" resultMap="CreationResult">
         SELECT * FROM creations
+        <choose>
+            <when test="sort == 'popular'">
+                ORDER BY likes DESC, created_at DESC
+            </when>
+            <otherwise>
+                ORDER BY created_at DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="listByUserId" resultMap="CreationResult">
+        SELECT * FROM creations
+        WHERE user_id = #{userId}
         <choose>
             <when test="sort == 'popular'">
                 ORDER BY likes DESC, created_at DESC
@@ -43,6 +58,10 @@
     <update id="updateLikes">
         UPDATE creations SET likes = #{likes} WHERE id = #{id}
     </update>
+
+    <delete id="deleteById">
+        DELETE FROM creations WHERE id = #{id}
+    </delete>
 
 </mapper>
 

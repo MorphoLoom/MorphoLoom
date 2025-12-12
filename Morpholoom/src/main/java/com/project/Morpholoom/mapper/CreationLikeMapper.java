@@ -11,6 +11,8 @@ public interface CreationLikeMapper {
 
     void delete(@Param("userId") Long userId, @Param("creationId") Long creationId);
 
+    void deleteByCreationId(@Param("creationId") Long creationId);
+
     int countLikes(@Param("creationId") Long creationId);
 }
 

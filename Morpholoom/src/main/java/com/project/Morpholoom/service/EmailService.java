@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.project.Morpholoom.domain.EmailVerification;
 import com.project.Morpholoom.dto.auth.EmailVerificationResponse;
+import com.project.Morpholoom.exception.EmailVerificationException;
 import com.project.Morpholoom.mapper.EmailVerificationMapper;
 
 import jakarta.mail.MessagingException;
@@ -81,20 +82,21 @@ public class EmailService {
 
     /**
      * 인증 코드를 검증합니다.
+     * @throws EmailVerificationException 인증 실패 시
      */
     public EmailVerificationResponse verifyCode(String email, String code) {
         EmailVerification verification = emailVerificationMapper.findByEmailAndCode(email, code);
         
         if (verification == null) {
-            return EmailVerificationResponse.failure("인증 코드가 올바르지 않습니다.");
+            throw new EmailVerificationException("INVALID_CODE", "인증 코드가 올바르지 않습니다.");
         }
         
         if (verification.getExpiresAt().isBefore(LocalDateTime.now())) {
-            return EmailVerificationResponse.failure("인증 코드가 만료되었습니다. 다시 요청해주세요.");
+            throw new EmailVerificationException("CODE_EXPIRED", "인증 코드가 만료되었습니다. 다시 요청해주세요.");
         }
         
         if (verification.isVerified()) {
-            return EmailVerificationResponse.failure("이미 인증된 이메일입니다.");
+            throw new EmailVerificationException("ALREADY_VERIFIED", "이미 인증된 이메일입니다.");
         }
         
         // 인증 완료 처리

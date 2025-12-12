@@ -17,6 +17,10 @@
         DELETE FROM creation_likes WHERE user_id = #{userId} AND creation_id = #{creationId}
     </delete>
 
+    <delete id="deleteByCreationId">
+        DELETE FROM creation_likes WHERE creation_id = #{creationId}
+    </delete>
+
     <select id="countLikes" resultType="int">
         SELECT COUNT(*) FROM creation_likes WHERE creation_id = #{creationId}
     </select>

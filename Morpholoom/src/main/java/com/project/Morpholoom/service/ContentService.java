@@ -14,9 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.project.Morpholoom.domain.ImageAsset;
 import com.project.Morpholoom.domain.VideoAsset;
 import com.project.Morpholoom.dto.content.ImageResponse;
-import com.project.Morpholoom.dto.content.ImageSaveRequest;
 import com.project.Morpholoom.dto.content.VideoResponse;
-import com.project.Morpholoom.dto.content.VideoSaveRequest;
 import com.project.Morpholoom.mapper.ImageMapper;
 import com.project.Morpholoom.mapper.VideoMapper;
 
@@ -52,17 +50,9 @@ public class ContentService {
 
     public ImageResponse uploadImage(Long userId, MultipartFile file) throws IOException {
         StoredFile stored = storeFile(userId, "images", file);
-        return saveImageMeta(userId, stored.fileUrl());
-    }
-
-    public ImageResponse saveImageMeta(Long userId, ImageSaveRequest request) {
-        return saveImageMeta(userId, request.getFileUrl());
-    }
-
-    private ImageResponse saveImageMeta(Long userId, String fileUrl) {
         ImageAsset image = new ImageAsset();
         image.setUserId(userId);
-        image.setFileUrl(fileUrl);
+        image.setFileUrl(stored.fileUrl());
         image.setCreatedAt(LocalDateTime.now());
         imageMapper.insertImage(image);
         return new ImageResponse(String.valueOf(image.getId()), image.getFileUrl(), image.getCreatedAt());
@@ -70,17 +60,9 @@ public class ContentService {
 
     public VideoResponse uploadVideo(Long userId, MultipartFile file) throws IOException {
         StoredFile stored = storeFile(userId, "videos", file);
-        return saveVideoMeta(userId, stored.fileUrl());
-    }
-
-    public VideoResponse saveVideoMeta(Long userId, VideoSaveRequest request) {
-        return saveVideoMeta(userId, request.getFileUrl());
-    }
-
-    private VideoResponse saveVideoMeta(Long userId, String fileUrl) {
         VideoAsset video = new VideoAsset();
         video.setUserId(userId);
-        video.setFileUrl(fileUrl);
+        video.setFileUrl(stored.fileUrl());
         video.setCreatedAt(LocalDateTime.now());
         videoMapper.insertVideo(video);
         return new VideoResponse(String.valueOf(video.getId()), video.getFileUrl(), video.getCreatedAt());

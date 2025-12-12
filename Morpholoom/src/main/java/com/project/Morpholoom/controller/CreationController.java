@@ -12,9 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import com.project.Morpholoom.dto.common.PageResponse;
 import com.project.Morpholoom.dto.creation.CreationRequest;
 import com.project.Morpholoom.dto.creation.CreationResponse;
@@ -22,6 +19,8 @@ import com.project.Morpholoom.dto.creation.LikeResponse;
 import com.project.Morpholoom.service.CreationService;
 import com.project.Morpholoom.service.SecurityService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -48,6 +47,24 @@ public class CreationController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(creationService.list(sort, page, size));
+    }
+
+    @GetMapping("/my")
+    @Operation(summary = "내 창작물 목록 조회", description = "로그인한 사용자의 창작물 목록을 조회합니다.")
+    public ResponseEntity<PageResponse<CreationResponse>> myList(
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Long userId = securityService.getCurrentUserId();
+        return ResponseEntity.ok(creationService.listByUserId(userId, sort, page, size));
+    }
+
+    @DeleteMapping("/my/{creationId}")
+    @Operation(summary = "내 창작물 삭제", description = "로그인한 사용자의 창작물을 삭제합니다.")
+    public ResponseEntity<Void> delete(@PathVariable Long creationId) {
+        Long userId = securityService.getCurrentUserId();
+        creationService.delete(userId, creationId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{creationId}/like")

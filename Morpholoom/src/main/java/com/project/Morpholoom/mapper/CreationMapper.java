@@ -15,10 +15,17 @@ public interface CreationMapper {
                                  @Param("limit") int limit,
                                  @Param("offset") int offset);
 
+    List<Creation> listByUserId(@Param("userId") Long userId,
+                                @Param("sort") String sort,
+                                @Param("limit") int limit,
+                                @Param("offset") int offset);
+
     List<Creation> ranking(@Param("limit") int limit);
 
     Creation findById(@Param("id") Long id);
 
     void updateLikes(@Param("id") Long id, @Param("likes") int likes);
+
+    void deleteById(@Param("id") Long id);
 }
 

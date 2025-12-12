@@ -52,7 +52,7 @@ storage:
     public-base-url: /files        # 정적 제공 URL prefix
 
 server:
-  port: 8080
+  port: 8888
   servlet:
     context-path: /
     session.timeout: 60m
