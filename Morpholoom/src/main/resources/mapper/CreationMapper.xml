@@ -10,14 +10,15 @@
         <result property="title" column="title"/>
         <result property="description" column="description"/>
         <result property="filename" column="filename"/>
+        <result property="thumbnail" column="thumbnail"/>
         <result property="likes" column="likes"/>
         <result property="rankScore" column="rank_score"/>
         <result property="createdAt" column="created_at"/>
     </resultMap>
 
     <insert id="insertCreation" parameterType="com.project.Morpholoom.domain.Creation" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO creations (user_id, title, description, filename, likes, rank_score, created_at)
-        VALUES (#{userId}, #{title}, #{description}, #{filename}, #{likes}, #{rankScore}, #{createdAt})
+        INSERT INTO creations (user_id, title, description, filename, thumbnail, likes, rank_score, created_at)
+        VALUES (#{userId}, #{title}, #{description}, #{filename}, #{thumbnail}, #{likes}, #{rankScore}, #{createdAt})
     </insert>
 
     <select id="listCreations" resultMap="CreationResult">
@@ -47,12 +48,41 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <select id="listLikedByUserId" resultMap="CreationResult">
+        SELECT c.* FROM creations c
+        INNER JOIN creation_likes cl ON c.id = cl.creation_id
+        WHERE cl.user_id = #{userId}
+        <choose>
+            <when test="sort == 'popular'">
+                ORDER BY c.likes DESC, cl.created_at DESC
+            </when>
+            <otherwise>
+                ORDER BY cl.created_at DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <select id="ranking" resultMap="CreationResult">
         SELECT * FROM creations ORDER BY likes DESC, rank_score DESC LIMIT #{limit}
     </select>
 
     <select id="findById" parameterType="long" resultMap="CreationResult">
         SELECT * FROM creations WHERE id = #{id}
+    </select>
+
+    <select id="findDetailById" parameterType="long" resultType="com.project.Morpholoom.dto.creation.CreationDetailResponse">
+        SELECT 
+            c.id AS creationId,
+            c.title,
+            c.likes,
+            c.created_at AS createdAt,
+            c.description,
+            c.filename,
+            u.username
+        FROM creations c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.id = #{id}
     </select>
 
     <update id="updateLikes">

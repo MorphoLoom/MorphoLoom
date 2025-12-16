@@ -3,10 +3,7 @@ package com.project.Morpholoom.controller;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,6 +32,12 @@ public class InferenceController {
 
     private final DockerExecutionService dockerExecutionService;
     private final SecurityService securityService;
+
+    @Value("${app.host-ip:localhost}")
+    private String hostIp;
+
+    @Value("${app.host-port:8888}")
+    private int serverPort;
 
     @PostMapping("/execute")
     @Operation(summary = "AI 추론 실행", description = "Docker 컨테이너에서 Python 추론 스크립트를 실행합니다. " +
@@ -76,25 +79,25 @@ public class InferenceController {
             if (response.isSuccess()) {
                 log.info("추론 실행 성공: userId={}, resultPath={}", userId, response.getResultVideoPath());
                 
-                // 결과 동영상 파일 반환
+                // 결과 동영상 파일명 추출
                 Path videoPath = Paths.get(response.getResultVideoPath());
-                Resource videoResource = new UrlResource(videoPath.toUri());
-                
-                if (!videoResource.exists() || !videoResource.isReadable()) {
-                    log.error("결과 동영상 파일을 찾을 수 없습니다: {}", response.getResultVideoPath());
-                    return ResponseEntity.status(500).body(
-                            InferenceResponse.failure(
-                                    "결과 동영상 파일을 찾을 수 없습니다.",
-                                    response.getExecutedCommand(),
-                                    "파일 경로: " + response.getResultVideoPath()));
-                }
-                
                 String filename = videoPath.getFileName().toString();
                 
-                return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType("video/mp4"))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                        .body(videoResource);
+                // 전체 URL 생성 (http://IP:PORT/data/videos/파일명)
+                String videoUrl = String.format("http://%s:%d/data/videos/%s", hostIp, serverPort, filename);
+                
+                // 썸네일 URL 생성 (파일명에서 .mp4를 _thumbnail.jpg로 변경)
+                String thumbnailFilename = filename.replace(".mp4", "_thumbnail.jpg");
+                String thumbnailUrl = String.format("http://%s:%d/data/images/%s", hostIp, serverPort, thumbnailFilename);
+                
+                // URL이 포함된 JSON 응답 반환
+                return ResponseEntity.ok(
+                        InferenceResponse.successWithUrl(
+                                response.getMessage(),
+                                response.getExecutedCommand(),
+                                response.getResultVideoPath(),
+                                videoUrl,
+                                thumbnailUrl));
             } else {
                 log.error("추론 실행 실패: userId={}, error={}", userId, response.getError());
                 return ResponseEntity.status(500).body(response);

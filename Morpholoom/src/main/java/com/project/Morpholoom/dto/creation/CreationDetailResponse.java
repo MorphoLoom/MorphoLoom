@@ -11,15 +11,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreationResponse {
-    private String id;
-    private String userId;
+public class CreationDetailResponse {
+    private Long creationId;
     private String title;
-    private String description;
-    private String filename;
-    private String thumbnail;
     private Integer likes;
-    private Double rankScore;
     private LocalDateTime createdAt;
+    private String description;
+    private String username;
+    private String filename;
+    private String videoUrl;
+    private Boolean liked;
 }
-

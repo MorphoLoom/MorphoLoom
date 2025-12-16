@@ -12,6 +12,7 @@ public class Creation {
     private String title;
     private String description;
     private String filename;
+    private String thumbnail;
     private Integer likes;
     private Double rankScore;
     private LocalDateTime createdAt;

@@ -3,7 +3,8 @@ spring:
     name: Morpholoom
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://morpholoom-postgres:5432/morpholoom
+    # url: jdbc:postgresql://morpholoom-postgres:5432/morpholoom
+    url: ${SPRING_DATASOURCE_URL}
     username: morpholoom
     password: ${DB_PASSWORD}
   thymeleaf:
@@ -13,7 +14,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://10.10.110.29:18081/realms/Morpholoom-realms
+          # issuer-uri: http://10.10.110.29:18081/realms/Morpholoom-realms
+          issuer-uri: http://${HOST_IP}:${KEYCLOAK_PORT}/realms/Morpholoom-realms
   servlet:
     multipart:
       max-file-size: 100MB      # 단일 파일 최대 크기
@@ -35,7 +37,8 @@ spring:
           writetimeout: 5000
 keycloak:
   realm: Morpholoom-realms
-  auth-server-url: http://10.10.110.29:18081
+  # auth-server-url: http://10.10.110.29:18081
+  auth-server-url: http://${HOST_IP}:${KEYCLOAK_PORT}
   resource: spring-boot-client
   credentials:
     secret: ${KEYCLOAK_CREDENTIALS_SECRET}
@@ -48,15 +51,19 @@ mybatis:
 # Local file storage
 storage:
   local:
-    root-dir: ./storage            # 서버 내 저장 경로
+    root-dir: ${STORAGE_ROOT_DIR:/app/src/storage}            # 서버 내 저장 경로
     public-base-url: /files        # 정적 제공 URL prefix
 
 server:
-  port: 8888
+  port: 8080
   servlet:
     context-path: /
     session.timeout: 60m
 
+# Application settings
+app:
+  host-ip: ${HOST_IP:localhost}
+  host-port: ${HOST_PORT:8080}
 ## Logging
 logging.config: classpath:logback-spring-local.xml
 logging.base.dir: logs

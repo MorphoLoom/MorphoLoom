@@ -23,6 +23,12 @@ public class InferenceResponse {
     @Schema(description = "결과 동영상 파일 경로", example = "/app/src/storage/user/results/1/test--test.mp4")
     private String resultVideoPath;
 
+    @Schema(description = "결과 동영상 URL", example = "/data/videos/1_test--test.mp4")
+    private String videoUrl;
+
+    @Schema(description = "썸네일 이미지 URL", example = "/data/images/1_test--test_thumbnail.jpg")
+    private String thumbnailUrl;
+
     @Schema(description = "오류 메시지 (실패 시)")
     private String error;
 
@@ -33,6 +39,18 @@ public class InferenceResponse {
         response.setMessage(message);
         response.setExecutedCommand(command);
         response.setResultVideoPath(resultVideoPath);
+        return response;
+    }
+
+    // 성공 응답 생성 메소드 (URL 포함)
+    public static InferenceResponse successWithUrl(String message, String command, String resultVideoPath, String videoUrl, String thumbnailUrl) {
+        InferenceResponse response = new InferenceResponse();
+        response.setSuccess(true);
+        response.setMessage(message);
+        response.setExecutedCommand(command);
+        response.setResultVideoPath(resultVideoPath);
+        response.setVideoUrl(videoUrl);
+        response.setThumbnailUrl(thumbnailUrl);
         return response;
     }
 

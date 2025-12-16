@@ -27,12 +27,14 @@ services:
     container_name: morpholoom-app
     working_dir: /app
     volumes:
-      - ./storage:/app/src/storage
-      - ./Morpholoom:/app/src
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./Morpholoom:/app/src
+      - ./storage/user/images:/app/src/storage/user/images
+      - ./storage/user/videos:/app/src/storage/user/videos
+      - ./storage/user/thumbnails:/app/src/src/data/images
+      - ./storage/user/results:/app/src/src/data/videos
     ports:
       - "18080:8080"
-      - "18888:8888"
     depends_on:
       postgres:
         condition: service_healthy
@@ -42,14 +44,12 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
       KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      HOST_IP: ${HOST_IP}
+      HOST_PORT: ${HOST_PORT}
+      KEYCLOAK_PORT: ${KEYCLOAK_PORT}
+      STORAGE_ROOT_DIR: /app/src/storage
     command: ["bash"]
     tty: true      
-    # command: >
-    #   sh -c "
-    #     chmod +x ./mvnw && 
-    #     ./mvnw clean install -DskipTests && 
-    #     java -jar target/morpholoom-0.0.1-SNAPSHOT.jar
-    #   "
     networks:
       - morpholoom-network
 
@@ -61,13 +61,12 @@ services:
     container_name: liveportrait-app
     volumes:
       - ./LivePortrait:/app
-      - ./LivePortrait/pretrained_weights:/app/pretrained_weights
       - ./storage/user/images:/app/assets/examples/source
       - ./storage/user/videos:/app/assets/examples/driving
       - ./storage/user/results:/app/animations
-
-    ports:
-      - "17860:7860"
+      - ./storage/user/thumbnails:/app/thumbnail
+    # ports:
+    #   - "17860:7860"
     # command: ["python", "app.py", "--server_name", "0.0.0.0", "--server_port", "7860", "--flag_force_cpu"]
     command: ["bash"]
     tty: true
@@ -84,21 +83,15 @@ services:
       - start-dev
       - --http-port=8081
     environment:
-      # 데이터베이스 설정
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
       KC_DB_USERNAME: morpholoom
       KC_DB_PASSWORD: ${DB_PASSWORD}
-      # 관리자 계정
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
-      # 호스트 설정
-      # KC_HOSTNAME: http://10.10.110.29
-      # KC_HOSTNAME_PORT: 18081
       KC_HOSTNAME_STRICT: false
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HTTP_ENABLED: true
-      # 로그 설정
       KC_LOG_LEVEL: info
     ports:
       - "18081:8081"
@@ -118,9 +111,6 @@ services:
 
 volumes:
   postgres_data:
-  morpholoom_storage:
-  liveportrait_weights:
-  liveportrait_output:
   keycloak_data:
 
 networks:

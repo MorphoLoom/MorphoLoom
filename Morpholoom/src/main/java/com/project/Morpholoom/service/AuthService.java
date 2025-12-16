@@ -175,33 +175,9 @@ public class AuthService {
     }
 
     /**
-     * 비밀번호 재설정 인증 코드를 발송합니다.
-     */
-    public PasswordResetResponse sendPasswordResetCode(String email) {
-        // 가입된 사용자인지 확인
-        User user = userMapper.findByEmail(email);
-        if (user == null) {
-            return PasswordResetResponse.failure("등록되지 않은 이메일입니다.");
-        }
-
-        // 이메일 인증 코드 발송
-        var result = emailService.sendPasswordResetCode(email);
-        if (result.isSuccess()) {
-            return PasswordResetResponse.success(result.getMessage());
-        } else {
-            return PasswordResetResponse.failure(result.getMessage());
-        }
-    }
-
-    /**
      * 비밀번호를 재설정합니다. (이메일 인증 코드 검증 후)
      */
     public PasswordResetResponse resetPassword(PasswordResetVerifyRequest request) {
-        // 인증 코드 검증
-        var verifyResult = emailService.verifyCode(request.getEmail(), request.getVerificationCode());
-        if (!verifyResult.isSuccess()) {
-            return PasswordResetResponse.failure(verifyResult.getMessage());
-        }
 
         // 사용자 확인
         User user = userMapper.findByEmail(request.getEmail());
@@ -217,7 +193,7 @@ public class AuthService {
             userMapper.updatePassword(request.getEmail(), passwordEncoder.encode(request.getNewPassword()));
 
             // 인증 정보 삭제 (재사용 방지)
-            emailVerificationMapper.deleteByEmail(request.getEmail());
+            // emailVerificationMapper.deleteByEmail(request.getEmail());
 
             log.info("비밀번호 재설정 완료: {}", request.getEmail());
             return PasswordResetResponse.success("비밀번호가 성공적으로 변경되었습니다. 새 비밀번호로 로그인해주세요.");

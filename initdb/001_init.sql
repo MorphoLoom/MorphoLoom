@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS creations (
     title       TEXT NOT NULL,
     description TEXT,
     filename    VARCHAR(255),
+    thumbnail   VARCHAR(255),
     likes       INT NOT NULL DEFAULT 0,
     rank_score  DOUBLE PRECISION NOT NULL DEFAULT 0,
     created_at  TIMESTAMP NOT NULL DEFAULT NOW()

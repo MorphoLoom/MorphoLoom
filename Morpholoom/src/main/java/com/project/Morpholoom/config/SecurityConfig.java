@@ -28,6 +28,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/**").permitAll()
                 // 정적 파일 허용
                 .requestMatchers("/files/**").permitAll()
+                // 썸네일 이미지 허용
+                .requestMatchers("/data/images/**").permitAll()
+                // 동영상 파일 허용
+                .requestMatchers("/data/videos/**").permitAll()
+                // static 리소스 허용 (이미지, CSS, JS 등)
+                .requestMatchers("/*.jpg", "/*.jpeg", "/*.png", "/*.gif", "/*.css", "/*.js", "/static/**").permitAll()
                 // 나머지는 인증 필요
                 .anyRequest().authenticated()
             )

@@ -8,9 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import com.project.Morpholoom.dto.auth.AuthResponse;
 import com.project.Morpholoom.dto.auth.DeleteAccountRequest;
 import com.project.Morpholoom.dto.auth.DeleteAccountResponse;
@@ -18,7 +15,6 @@ import com.project.Morpholoom.dto.auth.EmailVerificationRequest;
 import com.project.Morpholoom.dto.auth.EmailVerificationResponse;
 import com.project.Morpholoom.dto.auth.LoginRequest;
 import com.project.Morpholoom.dto.auth.LogoutRequest;
-import com.project.Morpholoom.dto.auth.PasswordResetRequest;
 import com.project.Morpholoom.dto.auth.PasswordResetResponse;
 import com.project.Morpholoom.dto.auth.PasswordResetVerifyRequest;
 import com.project.Morpholoom.dto.auth.RefreshTokenRequest;
@@ -28,6 +24,8 @@ import com.project.Morpholoom.dto.auth.SocialLoginRequest;
 import com.project.Morpholoom.service.AuthService;
 import com.project.Morpholoom.service.EmailService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -86,12 +84,6 @@ public class AuthController {
     @Operation(summary = "계정 삭제", description = "이메일과 비밀번호를 확인하여 Keycloak 및 로컬 DB에서 계정을 삭제합니다.")
     public ResponseEntity<DeleteAccountResponse> deleteAccount(@RequestBody DeleteAccountRequest request) {
         return ResponseEntity.ok(authService.deleteAccount(request));
-    }
-
-    @PostMapping("/password-reset/send-code")
-    @Operation(summary = "비밀번호 재설정 인증 코드 발송", description = "등록된 이메일로 비밀번호 재설정을 위한 인증 코드를 발송합니다.")
-    public ResponseEntity<PasswordResetResponse> sendPasswordResetCode(@RequestBody PasswordResetRequest request) {
-        return ResponseEntity.ok(authService.sendPasswordResetCode(request.getEmail()));
     }
 
     @PostMapping("/password-reset/verify")

@@ -449,10 +449,12 @@ class LivePortraitPipeline(object):
                     I_p_pstbk = paste_back(I_p_i, crop_info['M_c2o'], source_rgb_lst[0], mask_ori_float)
                 I_p_pstbk_lst.append(I_p_pstbk)
 
-        # Create output directory with optional id subfolder
+        # Extract user_id from source file path (parent directory name)
+        # e.g., assets/examples/source/1/image.jpg -> user_id = "1"
+        user_id = osp.basename(osp.dirname(args.source))
+        
+        # Create output directory (without user_id subfolder)
         output_dir = args.output_dir
-        if args.id is not None:
-            output_dir = osp.join(args.output_dir, str(args.id))
         mkdir(output_dir)
         wfp_concat = None
         ######### build the final concatenation result #########
@@ -486,8 +488,11 @@ class LivePortraitPipeline(object):
                 os.replace(wfp_concat_with_audio, wfp_concat)
                 log(f"Replace {wfp_concat_with_audio} with {wfp_concat}")
 
+            # generate filename prefix with user id from path
+            user_id_prefix = f'{user_id}_'
+
             # save the animated result
-            wfp = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}.mp4')
+            wfp = osp.join(output_dir, f'{user_id_prefix}{basename(args.source)}--{basename(args.driving)}.mp4')
             if I_p_pstbk_lst is not None and len(I_p_pstbk_lst) > 0:
                 images2video(I_p_pstbk_lst, wfp=wfp, fps=output_fps)
             else:
@@ -495,7 +500,7 @@ class LivePortraitPipeline(object):
 
             ######### build the final result #########
             if flag_source_has_audio or flag_driving_has_audio:
-                wfp_with_audio = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}_with_audio.mp4')
+                wfp_with_audio = osp.join(output_dir, f'{user_id_prefix}{basename(args.source)}--{basename(args.driving)}_with_audio.mp4')
                 audio_from_which_video = args.driving if ((flag_driving_has_audio and args.audio_priority == 'driving') or (not flag_source_has_audio)) else args.source
                 log(f"Audio is selected from {audio_from_which_video}")
                 add_audio_to_video(wfp, audio_from_which_video, wfp_with_audio)
@@ -507,6 +512,16 @@ class LivePortraitPipeline(object):
                 log(f'Animated template: {wfp_template}, you can specify `-d` argument with this template path next time to avoid cropping video, motion making and protecting privacy.', style='bold green')
             log(f'Animated video: {wfp}')
             log(f'Animated video with concat: {wfp_concat}')
+
+            # save thumbnail from the first frame of the result video
+            thumbnail_dir = '/app/thumbnail'
+            mkdir(thumbnail_dir)
+            wfp_thumbnail = osp.join(thumbnail_dir, f'{user_id_prefix}{basename(args.source)}--{basename(args.driving)}_thumbnail.jpg')
+            if I_p_pstbk_lst is not None and len(I_p_pstbk_lst) > 0:
+                cv2.imwrite(wfp_thumbnail, I_p_pstbk_lst[0][..., ::-1])
+            else:
+                cv2.imwrite(wfp_thumbnail, I_p_lst[0][..., ::-1])
+            log(f'Thumbnail saved: {wfp_thumbnail}')
         else:
             wfp_concat = osp.join(output_dir, f'{basename(args.source)}--{basename(args.driving)}_concat.jpg')
             cv2.imwrite(wfp_concat, frames_concatenated[0][..., ::-1])

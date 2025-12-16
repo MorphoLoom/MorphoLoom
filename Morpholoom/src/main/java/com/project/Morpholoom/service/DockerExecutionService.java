@@ -1,5 +1,11 @@
 package com.project.Morpholoom.service;
 
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.stereotype.Service;
+
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.exception.NotFoundException;
@@ -7,13 +13,9 @@ import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import com.project.Morpholoom.dto.inference.InferenceRequest;
 import com.project.Morpholoom.dto.inference.InferenceResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.io.ByteArrayOutputStream;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -39,11 +41,9 @@ public class DockerExecutionService {
         String sourcePath = String.format("/app/assets/examples/source/%d/%s", userId, extractFileName(request.getSourcePath()));
         String drivingPath = String.format("/app/assets/examples/driving/%d/%s", userId, extractFileName(request.getDrivingPath()));
 
-        // 결과 동영상 파일 경로 생성: {sourceName}--{drivingName}.mp4
-        // String resultVideoPath = String.format("/app/src/storage/user/results/%d/%s--%s.mp4", 
-        //         userId, sourceFileName, drivingFileName);
-        String resultVideoPath = String.format("/app/src/storage/user/results/%s--%s.mp4", 
-                 sourceFileName, drivingFileName);
+        // 결과 동영상 파일 경로 생성: {userId}_{sourceName}--{drivingName}.mp4
+        String resultVideoPath = String.format("/app/src/storage/user/results/%d_%s--%s.mp4", 
+                userId, sourceFileName, drivingFileName);
         String[] command = {
                 "python", "/app/inference.py",
                 "-s", sourcePath,

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.Morpholoom.dto.common.PageResponse;
+import com.project.Morpholoom.dto.creation.CreationDetailResponse;
 import com.project.Morpholoom.dto.creation.CreationRequest;
 import com.project.Morpholoom.dto.creation.CreationResponse;
 import com.project.Morpholoom.dto.creation.LikeResponse;
@@ -49,6 +50,14 @@ public class CreationController {
         return ResponseEntity.ok(creationService.list(sort, page, size));
     }
 
+    @GetMapping("/{creationId}")
+    @Operation(summary = "창작물 상세 조회", description = "개별 창작물의 상세 정보를 조회합니다.")
+    public ResponseEntity<CreationDetailResponse> getDetail(
+            @PathVariable Long creationId) {
+        Long userId = securityService.getCurrentUserId();
+        return ResponseEntity.ok(creationService.getDetail(creationId, userId));
+    }
+
     @GetMapping("/my")
     @Operation(summary = "내 창작물 목록 조회", description = "로그인한 사용자의 창작물 목록을 조회합니다.")
     public ResponseEntity<PageResponse<CreationResponse>> myList(
@@ -57,6 +66,16 @@ public class CreationController {
             @RequestParam(defaultValue = "20") int size) {
         Long userId = securityService.getCurrentUserId();
         return ResponseEntity.ok(creationService.listByUserId(userId, sort, page, size));
+    }
+
+    @GetMapping("/my/liked")
+    @Operation(summary = "좋아요한 창작물 목록 조회", description = "로그인한 사용자가 좋아요한 창작물 목록을 조회합니다.")
+    public ResponseEntity<PageResponse<CreationResponse>> likedList(
+            @RequestParam(defaultValue = "latest") String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Long userId = securityService.getCurrentUserId();
+        return ResponseEntity.ok(creationService.listLikedByUserId(userId, sort, page, size));
     }
 
     @DeleteMapping("/my/{creationId}")

@@ -6,10 +6,13 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import com.project.Morpholoom.domain.Creation;
+import com.project.Morpholoom.dto.creation.CreationDetailResponse;
 
 @Mapper
 public interface CreationMapper {
     void insertCreation(Creation creation);
+
+    CreationDetailResponse findDetailById(@Param("id") Long id);
 
     List<Creation> listCreations(@Param("sort") String sort,
                                  @Param("limit") int limit,
@@ -19,6 +22,11 @@ public interface CreationMapper {
                                 @Param("sort") String sort,
                                 @Param("limit") int limit,
                                 @Param("offset") int offset);
+
+    List<Creation> listLikedByUserId(@Param("userId") Long userId,
+                                     @Param("sort") String sort,
+                                     @Param("limit") int limit,
+                                     @Param("offset") int offset);
 
     List<Creation> ranking(@Param("limit") int limit);
 
